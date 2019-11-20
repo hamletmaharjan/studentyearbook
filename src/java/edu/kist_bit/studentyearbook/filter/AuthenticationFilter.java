@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -39,7 +38,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author hams
+ * @author Administrator
  */
 @WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/*"},
         initParams = @WebInitParam(name = "avoids-url", value = "/login.jsp,"
@@ -47,7 +46,7 @@ import javax.servlet.http.HttpSession;
                 + "/js/,"
                 + "/index.jsp"))
 public class AuthenticationFilter implements Filter {
-    
+
     private static final boolean debug = false;
 
     // The filter configuration object we are associated with.  If
@@ -55,58 +54,49 @@ public class AuthenticationFilter implements Filter {
     // configured. 
     private FilterConfig filterConfig = null;
     private ArrayList<String> urlList;
-    
+
     public AuthenticationFilter() {
-    }    
-    
-    
+    }
+
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain)
             throws IOException, ServletException {
-        
+
         if (debug) {
             log("AuthenticationFilter:doFilter()");
         }
-        
+
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         String url = req.getServletPath();
         boolean allowedRequest = false;
-        
-        if(urlList.contains(url)){
+        if (urlList.contains(url)) {
             allowedRequest = true;
         }
-        
+
         Throwable problem = null;
-        
-        if(!allowedRequest){
+
+        if (!allowedRequest) {
             HttpSession session = req.getSession(false);
-            if (null == session && url.equalsIgnoreCase("/dashboard")){
-                if(req.getMethod().equalsIgnoreCase("POST")){
-                    try {
-                        if(checkLogin(req,resp)){
-                            chain.doFilter(request,response);
-                            return;
-                        }
-                        else{
-                            resp.sendRedirect("login.jsp");
-                        }
-                    } catch (NonexistentEntityException ex) {
-                        Logger.getLogger(AuthenticationFilter.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                else{
+            if (null == session && url.equalsIgnoreCase("/dashboard")) {
+                if (req.getMethod().equalsIgnoreCase("POST")) {
+                    if(checkLogin(req,resp)){
+                        chain.doFilter(request,response);
+                        return;
+                    }else {
+                        resp.sendRedirect("login.jsp");
+                    }                        
+                } else {
                     resp.sendRedirect("login.jsp");
+                    return;
                 }
-            }
-            else if(null == session){
+            } else if (null == session) {
                 resp.sendRedirect("index.jsp");
                 return;
             }
         }
-        
-        chain.doFilter(request, response);
 
+        chain.doFilter(request, response);
         // If there was a problem, we want to rethrow it if it is
         // a known type, otherwise log it.
         if (problem != null) {
@@ -139,24 +129,23 @@ public class AuthenticationFilter implements Filter {
     /**
      * Destroy method for this filter
      */
-    public void destroy() {        
+    public void destroy() {
     }
 
     /**
      * Init method for this filter
      */
-    public void init(FilterConfig filterConfig) {        
+    public void init(FilterConfig filterConfig) {
         this.filterConfig = filterConfig;
-        
         String urls = filterConfig.getInitParameter("avoids-url");
         StringTokenizer token = new StringTokenizer(urls, ",");
         urlList = new ArrayList<>();
-        while(token.hasMoreTokens()){
+        while (token.hasMoreTokens()) {
             urlList.add(token.nextToken());
         }
         if (filterConfig != null) {
-            if (debug) {                
-                log("AuthenticationFilter:Initializing filter");
+            if (debug) {
+                log("AuthenticationFilter: Initializing filter");
             }
         }
     }
@@ -173,21 +162,22 @@ public class AuthenticationFilter implements Filter {
         sb.append(filterConfig);
         sb.append(")");
         return (sb.toString());
+
     }
-    
+
     private void sendProcessingError(Throwable t, ServletResponse response) {
-        String stackTrace = getStackTrace(t);        
-        
+        String stackTrace = getStackTrace(t);
+
         if (stackTrace != null && !stackTrace.equals("")) {
             try {
                 response.setContentType("text/html");
                 PrintStream ps = new PrintStream(response.getOutputStream());
-                PrintWriter pw = new PrintWriter(ps);                
+                PrintWriter pw = new PrintWriter(ps);
                 pw.print("<html>\n<head>\n<title>Error</title>\n</head>\n<body>\n"); //NOI18N
 
                 // PENDING! Localize this for next official release
-                pw.print("<h1>The resource did not process correctly</h1>\n<pre>\n");                
-                pw.print(stackTrace);                
+                pw.print("<h1>The resource did not process correctly</h1>\n<pre>\n");
+                pw.print(stackTrace);
                 pw.print("</pre></body>\n</html>"); //NOI18N
                 pw.close();
                 ps.close();
@@ -204,7 +194,7 @@ public class AuthenticationFilter implements Filter {
             }
         }
     }
-    
+
     public static String getStackTrace(Throwable t) {
         String stackTrace = null;
         try {
@@ -218,41 +208,35 @@ public class AuthenticationFilter implements Filter {
         }
         return stackTrace;
     }
-    
+
     public void log(String msg) {
-        filterConfig.getServletContext().log(msg);        
+        filterConfig.getServletContext().log(msg);
     }
 
-    private boolean checkLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException, NonexistentEntityException {
+    private boolean checkLogin(HttpServletRequest req, HttpServletResponse resp)throws IOException, ServletException {
         EntityManagerFactory emf = (EntityManagerFactory) req.getServletContext().getAttribute("StudentYearbookemf");
         
         boolean isUserLoggedIn = false;
-        
         TableStudent student = null;
-        
-        TableStudentJpaController studentJpaController = new TableStudentJpaController(emf);
-        student = studentJpaController.checkLogin(req.getParameter("email"));
-        /*
-        try{
-            student = studentJpaController.checkLogin(req.getParameter("username"));
-        } catch(NonexistentEntityException ex){
-            java.util.logging.Logger.getLogger(AuthenticationFilter.class.getName()).log(Level.SEVERE,null,ex);
-            
+       
+            TableStudentJpaController tableStudentJpaController=new TableStudentJpaController(emf);
+        try {
+            student = tableStudentJpaController.checkLogin(req.getParameter("email"));
+        } catch (NonexistentEntityException ex) {
+            java.util.logging.Logger.getLogger(AuthenticationFilter.class.getName()).log(Level.SEVERE, null, ex);
         }
-        */
         
-        if(student!=null){
+        if(student!=null ){
             if(BCrypt.checkpw(req.getParameter("password"), student.getPassword())){
                 isUserLoggedIn = true;
                 HttpSession session = req.getSession();
                 session.setAttribute("loggedInUser", student);
             }
         }
-        
-        
-        return true;
-    }
     
+        return isUserLoggedIn;
+    }
+
     /**
      * This request wrapper class extends the support class
      * HttpServletRequestWrapper, which implements all the methods in the
@@ -380,9 +364,5 @@ public class AuthenticationFilter implements Filter {
 	}
          */
     }
-    
-    
-    
-    
-    
+
 }
