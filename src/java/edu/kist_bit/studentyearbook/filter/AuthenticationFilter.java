@@ -5,8 +5,8 @@
  */
 package edu.kist_bit.studentyearbook.filter;
 
-import edu.kist_bit.studentyearbook.entity.TableStudent;
-import edu.kist_bit.studentyearbook.services.TableStudentJpaController;
+import edu.kist_bit.studentyearbook.entity.TableAdmin;
+import edu.kist_bit.studentyearbook.services.TableAdminJpaController;
 import edu.kist_bit.studentyearbook.services.exceptions.NonexistentEntityException;
 import edu.kist_bit.studentyearbook.utils.BCrypt;
 import java.io.IOException;
@@ -217,20 +217,20 @@ public class AuthenticationFilter implements Filter {
         EntityManagerFactory emf = (EntityManagerFactory) req.getServletContext().getAttribute("StudentYearbookemf");
         
         boolean isUserLoggedIn = false;
-        TableStudent student = null;
+        TableAdmin admin = null;
        
-            TableStudentJpaController tableStudentJpaController=new TableStudentJpaController(emf);
+            TableAdminJpaController tableAdminJpaController=new TableAdminJpaController(emf);
         try {
-            student = tableStudentJpaController.checkLogin(req.getParameter("email"));
+            admin = tableAdminJpaController.checkLogin(req.getParameter("email"));
         } catch (NonexistentEntityException ex) {
             java.util.logging.Logger.getLogger(AuthenticationFilter.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        if(student!=null ){
-            if(BCrypt.checkpw(req.getParameter("password"), student.getPassword())){
+        if(admin!=null ){
+            if(BCrypt.checkpw(req.getParameter("password"), admin.getPassword())){
                 isUserLoggedIn = true;
                 HttpSession session = req.getSession();
-                session.setAttribute("loggedInUser", student);
+                session.setAttribute("loggedInUser", admin);
             }
         }
     

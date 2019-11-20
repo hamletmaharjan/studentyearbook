@@ -134,5 +134,17 @@ public class TableAdminJpaController implements Serializable {
             em.close();
         }
     }
+
+    public TableAdmin checkLogin(String email) throws NonexistentEntityException {
+        EntityManager em = getEntityManager();
+        TableAdmin results = null;
+        try{
+            results = (TableAdmin) em.createNamedQuery("").setParameter("email",email).getSingleResult();
+                              
+        } catch (Exception e){
+            throw new NonexistentEntityException("The student with email " + email + "doesn't exist");
+        }
+        return results;
+    }
     
 }
