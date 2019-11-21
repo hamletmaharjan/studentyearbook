@@ -5,6 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,12 +14,17 @@
     </head>
     <body>
         <h1>Login</h1>
-        <from method="POST">
+        <c:set var="errmsg" scope="page" value="${errorMsg}"></c:set>
+                                        <c:if test="${errmsg != null}">
+                                            ${errmsg}
+                                           
+                                        </c:if>
+        <form action="dashboard" method="POST">
             <label>Email</label>
             <input type="text" name="email"><br>
             <label>Password</label>
             <input type="password" name="password"><br>
             <button type="submit" name="submitbtn">Login</button>
-        </from>
+        </form>
     </body>
 </html>

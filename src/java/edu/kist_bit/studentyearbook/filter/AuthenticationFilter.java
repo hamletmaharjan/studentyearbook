@@ -42,8 +42,10 @@ import javax.servlet.http.HttpSession;
  */
 @WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/*"},
         initParams = @WebInitParam(name = "avoids-url", value = "/login.jsp,"
-                + "/css/,"
-                + "/js/,"
+                + ".css,"
+                + ".js,"
+                + "/fonts/,"
+                + "/images/,"
                 + "/index.jsp"))
 public class AuthenticationFilter implements Filter {
 
@@ -70,27 +72,35 @@ public class AuthenticationFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
         String url = req.getServletPath();
         boolean allowedRequest = false;
-        if (urlList.contains(url)) {
-            allowedRequest = true;
+        
+        for(String s: urlList){
+            if (urlList.contains(url)) {
+                allowedRequest = true;
+                break;
+            }
         }
+        
 
         Throwable problem = null;
 
         if (!allowedRequest) {
             HttpSession session = req.getSession(false);
-            if (null == session && url.equalsIgnoreCase("/dashboard")) {
+            if ((null == session || session.getAttribute("loggedInUser") == null) && url.equalsIgnoreCase("/dashboard")) {
                 if (req.getMethod().equalsIgnoreCase("POST")) {
                     if(checkLogin(req,resp)){
                         chain.doFilter(request,response);
                         return;
                     }else {
-                        resp.sendRedirect("login.jsp");
+                        req.setAttribute("errorMsg", "Invalid information");
+                        req.getRequestDispatcher("login.jsp").forward(request, response);
+                        //resp.sendRedirect("login.jsp");
+                        return;
                     }                        
                 } else {
                     resp.sendRedirect("login.jsp");
                     return;
                 }
-            } else if (null == session) {
+            } else if (null == session || session.getAttribute("loggedInUser") == null) {
                 resp.sendRedirect("index.jsp");
                 return;
             }
@@ -219,7 +229,7 @@ public class AuthenticationFilter implements Filter {
         boolean isUserLoggedIn = false;
         TableAdmin admin = null;
        
-            TableAdminJpaController tableAdminJpaController=new TableAdminJpaController(emf);
+        TableAdminJpaController tableAdminJpaController=new TableAdminJpaController(emf);
         try {
             admin = tableAdminJpaController.checkLogin(req.getParameter("email"));
         } catch (NonexistentEntityException ex) {
@@ -227,7 +237,8 @@ public class AuthenticationFilter implements Filter {
         }
         
         if(admin!=null ){
-            if(BCrypt.checkpw(req.getParameter("password"), admin.getPassword())){
+            //if(BCrypt.checkpw(req.getParameter("password"), admin.getPassword())){
+            if(req.getParameter("password").equals(admin.getPassword())){
                 isUserLoggedIn = true;
                 HttpSession session = req.getSession();
                 session.setAttribute("loggedInUser", admin);
