@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -233,7 +234,7 @@ public class AuthenticationFilter implements Filter {
         try {
             admin = tableAdminJpaController.checkLogin(req.getParameter("email"));
         } catch (NonexistentEntityException ex) {
-            java.util.logging.Logger.getLogger(AuthenticationFilter.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AuthenticationFilter.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         if(admin!=null ){
@@ -244,7 +245,6 @@ public class AuthenticationFilter implements Filter {
                 session.setAttribute("loggedInUser", admin);
             }
         }
-    
         return isUserLoggedIn;
     }
 

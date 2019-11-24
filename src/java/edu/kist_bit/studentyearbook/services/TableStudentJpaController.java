@@ -134,17 +134,5 @@ public class TableStudentJpaController implements Serializable {
             em.close();
         }
     }
-
-    public TableStudent checkLogin(String email) throws NonexistentEntityException{
-        EntityManager em = getEntityManager();
-        TableStudent results = null;
-        try{
-            results = (TableStudent) em.createNamedQuery("").setParameter("email",email).getSingleResult();
-                              
-        } catch (Exception e){
-            throw new NonexistentEntityException("The student with email " + email + "doesn't exist");
-        }
-        return results;
-    }
     
 }

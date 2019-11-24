@@ -13,8 +13,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1> ${result} </h1>
-        <h1> ${result1} </h1>
-        <h1> ${result2} </h1>
+        <p>ajdhskjadadslbhkjsd</p>
     </body>
 </html>

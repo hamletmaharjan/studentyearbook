@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
@@ -134,17 +135,18 @@ public class TableAdminJpaController implements Serializable {
             em.close();
         }
     }
-    
+
     public TableAdmin checkLogin(String email) throws NonexistentEntityException {
         EntityManager em = getEntityManager();
+        
         TableAdmin results = null;
+        
         try{
             results = (TableAdmin) em.createNamedQuery("TableAdmin.findByEmail").setParameter("email",email).getSingleResult();
-                              
-        } catch (Exception e){
-            throw new NonexistentEntityException("The admin with email " + email + "doesn't exist");
+        } catch(NullPointerException | NoResultException e){
+            throw new NonexistentEntityException("error occured");
         }
         return results;
+        
     }
-    
 }

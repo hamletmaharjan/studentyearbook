@@ -40,11 +40,7 @@ public class DashboardController extends HttpServlet {
         String dashboardURL = "/WEB-INF/dashboard.jsp";
         String loginURL = "login.jsp";
         
-        
-        
-        request.setAttribute("result","result from db");
-        request.setAttribute("result1","result from db");
-        request.setAttribute("result2","result from db");
+ 
         
         dispatchRequest(request,response,dashboardURL);
     }
